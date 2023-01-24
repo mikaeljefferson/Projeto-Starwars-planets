@@ -17,7 +17,6 @@ function Table() {
         setPlanetsList(planetsAPI);
       } catch (error) {
         setErrors(error);
-        // console.log(errors);
       } finally {
         setIsLoading(false);
       }
