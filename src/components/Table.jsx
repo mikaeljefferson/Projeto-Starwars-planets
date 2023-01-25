@@ -1,56 +1,212 @@
-import React, { useEffect, useState } from 'react';
-import getPlanets from '../Service/planetsApi';
+import React, { useContext, useEffect, useState } from 'react';
+import PlanetsContext from '../Context/planetsContex';
 
 function Table() {
-  const [planetsList, setPlanetsList] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [errors, setErrors] = useState(null);
-  const [search, setSearch] = useState('');
+  const { list, filteredList, setFilteredList, filter,
+    setFilter, arrFilter, setArrFilter } = useContext(PlanetsContext);
+  const [selectedColumn, setSelectedColumn] = useState([]);
+  const [visualFilter, setVisualFilter] = useState([]);
+  const comparisons = ['maior que', 'menor que', 'igual a'];
 
   useEffect(() => {
-    const fetchAPI = async () => {
-      try {
-        setIsLoading(true);
-
-        const planetsAPI = await getPlanets();
-        console.log(planetsAPI);
-        setPlanetsList(planetsAPI);
-      } catch (error) {
-        setErrors(error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchAPI();
+    const options = ['population', 'orbital_period',
+      'diameter', 'rotation_period', 'surface_water'];
+    setSelectedColumn(options);
   }, []);
 
-  const filteredPlanets = planetsList.filter((planet) => planet.name.toLowerCase()
-    .includes(search.toLowerCase()));
+  const handleFilter = ({ target }) => {
+    const { value } = target;
+    if (value === '') {
+      setFilteredList(list);
+    } else {
+      const getFiltered = list
+        .filter((planet) => planet.name.toLowerCase().includes(value.toLowerCase()));
+      setFilteredList(getFiltered);
+    }
+  };
+
+  const handleChange = ({ target }) => {
+    setFilter({ ...filter, [target.name]: target.value });
+  };
+
+  const handleClick = () => {
+    setArrFilter([...arrFilter, filter]);
+    const filterSelected = selectedColumn.filter((x) => x !== filter.column);
+    const visualFiltered = selectedColumn.find((x) => x === filter.column);
+    setSelectedColumn(filterSelected);
+    setVisualFilter([...visualFilter, visualFiltered]);
+    setFilter({ ...filter, column: selectedColumn[1] });
+  };
+
+  const handleClickX = (column) => {
+    setVisualFilter(visualFilter.filter((x) => !x.includes(column)));
+    setSelectedColumn([...selectedColumn, column]);
+    setArrFilter(arrFilter.filter((x) => !x.column.includes(column)));
+    if (arrFilter.length > 1) {
+      setFilteredList(list);
+    }
+  };
+
+  const handleClickRemoveAll = () => {
+    setSelectedColumn([...selectedColumn, ...visualFilter]);
+    setVisualFilter([]);
+    setArrFilter([]);
+  };
+
+  const filterPopulation = (comparison, value) => {
+    if (comparison === 'maior que') {
+      const filtro = filteredList.filter((x) => Number(x.population) > value);
+      setFilteredList(filtro);
+    } else if (comparison === 'menor que') {
+      const filtro = filteredList.filter((x) => Number(x.population) < value);
+      setFilteredList(filtro);
+    } else if (comparison === 'igual a') {
+      const filtro = filteredList.filter((x) => Number(x.population) === value);
+      setFilteredList(filtro);
+    }
+  };
+
+  const filterOrbital = (comparison, value) => {
+    if (comparison === 'maior que') {
+      const filtro = filteredList.filter((x) => Number(x.orbital_period) > value);
+      setFilteredList(filtro);
+    } else if (comparison === 'menor que') {
+      const filtro = filteredList.filter((x) => Number(x.orbital_period) < value);
+      setFilteredList(filtro);
+    } else if (comparison === 'igual a') {
+      const filtro = filteredList.filter((x) => Number(x.orbital_period) === value);
+      setFilteredList(filtro);
+    }
+  };
+
+  const filterDiameter = (comparison, value) => {
+    if (comparison === 'maior que') {
+      const filtro = filteredList.filter((x) => Number(x.diameter) > value);
+      setFilteredList(filtro);
+    } else if (comparison === 'menor que') {
+      const filtro = filteredList.filter((x) => Number(x.diameter) < value);
+      setFilteredList(filtro);
+    } else if (comparison === 'igual a') {
+      const filtro = filteredList.filter((x) => Number(x.diameter) === value);
+      setFilteredList(filtro);
+    }
+  };
+
+  const filterRotation = (comparison, value) => {
+    if (comparison === 'maior que') {
+      const filtro = filteredList.filter((x) => Number(x.rotation_period) > value);
+      setFilteredList(filtro);
+    } else if (comparison === 'menor que') {
+      const filtro = filteredList.filter((x) => Number(x.rotation_period) < value);
+      setFilteredList(filtro);
+    } else if (comparison === 'igual a') {
+      const filtro = filteredList.filter((x) => Number(x.rotation_period) === value);
+      setFilteredList(filtro);
+    }
+  };
+
+  const filterSurface = (comparison, value) => {
+    if (comparison === 'maior que') {
+      const filtro = filteredList.filter((x) => Number(x.surface_water) > value);
+      setFilteredList(filtro);
+    } else if (comparison === 'menor que') {
+      const filtro = filteredList.filter((x) => Number(x.surface_water) < value);
+      setFilteredList(filtro);
+    } else if (comparison === 'igual a') {
+      const filtro = filteredList.filter((x) => Number(x.surface_water) === value);
+      setFilteredList(filtro);
+    }
+  };
+
+  useEffect(() => {
+    if (arrFilter.length > 0) {
+      const { column, comparison, value } = arrFilter[arrFilter.length - 1];
+      if (column === 'population') {
+        filterPopulation(comparison, Number(value));
+      } else if (column === 'orbital_period') {
+        filterOrbital(comparison, Number(value));
+      } else if (column === 'diameter') {
+        filterDiameter(comparison, Number(value));
+      } else if (column === 'rotation_period') {
+        filterRotation(comparison, Number(value));
+      } else if (column === 'surface_water') {
+        filterSurface(comparison, Number(value));
+      }
+    } else {
+      setFilteredList(list);
+    }
+  }, [arrFilter]);
 
   return (
-    <>
-      <h1>
-        Star Wars Project
-      </h1>
-      <label htmlFor="name-filter">
-        <h4>Filter planets by:</h4>
-        {' '}
-        <div>
-          <input
-            className="input"
-            data-testid="name-filter"
-            id="name-filter"
-            name="name-filter"
-            onChange={ (e) => setSearch(e.target.value) }
-            value={ search }
-            type="text"
-          />
-        </div>
-      </label>
-
+    <div>
+      <div>
+        <input
+          type="text"
+          data-testid="name-filter"
+          onChange={ handleFilter }
+        />
+      </div>
+      <br />
+      <div>
+        <select
+          data-testid="column-filter"
+          name="column"
+          value={ filter.column }
+          onChange={ handleChange }
+        >
+          {selectedColumn.map((x) => (
+            <option key={ x }>{x}</option>
+          ))}
+        </select>
+        <select
+          data-testid="comparison-filter"
+          name="comparison"
+          value={ filter.comparison }
+          onChange={ handleChange }
+        >
+          {comparisons.map((x) => (
+            <option key={ x }>{x}</option>
+          ))}
+        </select>
+        <input
+          type="number"
+          data-testid="value-filter"
+          name="value"
+          value={ filter.value }
+          onChange={ handleChange }
+        />
+        <button
+          type="button"
+          data-testid="button-filter"
+          onClick={ handleClick }
+        >
+          Filtrar
+        </button>
+      </div>
+      <div>
+        {
+          visualFilter.map((x, i) => (
+            <div key={ i } data-testid="filter">
+              {x}
+              <button
+                type="button"
+                onClick={ () => handleClickX(x) }
+              >
+                X
+              </button>
+            </div>
+          ))
+        }
+      </div>
+      <button
+        type="button"
+        data-testid="button-remove-filters"
+        onClick={ handleClickRemoveAll }
+      >
+        Remove All Filters
+      </button>
       <table>
         <thead>
-
           <tr>
             <th>Name</th>
             <th>Rotation Period</th>
@@ -60,7 +216,7 @@ function Table() {
             <th>Gravity</th>
             <th>Terrain</th>
             <th>Surface Water</th>
-            <th>Population/</th>
+            <th>Population</th>
             <th>Films</th>
             <th>Created</th>
             <th>Edited</th>
@@ -68,49 +224,26 @@ function Table() {
           </tr>
         </thead>
         <tbody>
-          <h3>
-            { isLoading && 'Loading...' }
-            { errors !== null && errors }
-          </h3>
-          { search.length > 0 ? filteredPlanets.map((planet) => (
-            <tr className="table-primary" key={ planet.url }>
-              <td>{ planet.name }</td>
-              <td>{ planet.rotation_period }</td>
-              <td>{ planet.orbital_period }</td>
-              <td>{ planet.diameter }</td>
-              <td>{ planet.climate }</td>
-              <td>{ planet.gravity }</td>
-              <td>{ planet.terrain }</td>
-              <td>{ planet.surface_water }</td>
-              <td>{ planet.population }</td>
-              <td>{ planet.films }</td>
-              <td>{ planet.created }</td>
-              <td>{ planet.edited }</td>
-              <td>{ planet.url }</td>
+          {filteredList.map((planet) => (
+            <tr key={ planet.name }>
+              <td>{planet.name}</td>
+              <td>{planet.rotation_period}</td>
+              <td>{planet.orbital_period}</td>
+              <td>{planet.diameter}</td>
+              <td>{planet.climate}</td>
+              <td>{planet.gravity}</td>
+              <td>{planet.terrain}</td>
+              <td>{planet.surface_water}</td>
+              <td>{planet.population}</td>
+              <td>{planet.films}</td>
+              <td>{planet.created}</td>
+              <td>{planet.edited}</td>
+              <td>{planet.url}</td>
             </tr>
-          ))
-            : planetsList.map((planet) => (
-              <tr className="table-primary" key={ planet.url }>
-                <td>{ planet.name }</td>
-                <td>{ planet.rotation_period }</td>
-                <td>{ planet.orbital_period }</td>
-                <td>{ planet.diameter }</td>
-                <td>{ planet.climate }</td>
-                <td>{ planet.gravity }</td>
-                <td>{ planet.terrain }</td>
-                <td>{ planet.surface_water }</td>
-                <td>{ planet.population }</td>
-                <td>{ planet.films }</td>
-                <td>{ planet.created }</td>
-                <td>{ planet.edited }</td>
-                <td>{ planet.url }</td>
-              </tr>
-            ))}
+          ))}
         </tbody>
       </table>
-
-      <h3>Another component</h3>
-    </>
+    </div>
   );
 }
 
