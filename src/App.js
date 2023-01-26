@@ -6,6 +6,7 @@ import PlanetsProvider from './Context/PlanetsProvider';
 function App() {
   return (
     <div>
+      <span>Hello, App!</span>
       <PlanetsProvider>
         <Table />
       </PlanetsProvider>

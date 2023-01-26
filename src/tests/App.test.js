@@ -1,17 +1,25 @@
 import React from 'react';
-import testData from '../../cypress/mocks/testData';
 import { render, screen, waitFor } from '@testing-library/react';
 import App from '../App';
 import userEvent from '@testing-library/user-event';
+import Planets from './mock'
+import { act } from 'react-dom/test-utils';
 
+describe('Testes do App', () => {
+  beforeEach(() => global.fetch = jest.fn().mockResolvedValue({
+    json: jest.fn().mockResolvedValue(Planets)
+  }))
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
 
-  it('Testando inputs', () => {
-    render(<App />);
+  it('Testando inputs', async() => {
+    await act(() =>render(<App />));
 
-    const nameFilter = screen.getByTestId('name-filter');
-    const columnSelects = screen.getByTestId('column-filter');
-    const comparisonSelects = screen.getByTestId('comparison-filter');
-    const valueSelects = screen.getByTestId('value-filter');
+    const nameFilter = await screen.getByTestId('name-filter');
+    const columnSelects = await screen.getByTestId('column-filter');
+    const comparisonSelects = await screen.getByTestId('comparison-filter');
+    const valueSelects =  await screen.getByTestId('value-filter');
 
     expect(nameFilter).toBeInTheDocument();
     expect(columnSelects).toBeInTheDocument();
@@ -21,15 +29,15 @@ import userEvent from '@testing-library/user-event';
     expect(valueSelects).toBeInTheDocument();
   });
 
-  it('testando filtro de busca por nome', () => {
-    render(<App />);
+  it('testando filtro de busca por nome',  async () => {
+    await act(() => render(<App />));
 
-    const nameFilter = screen.getByTestId('name-filter');
+    const nameFilter = await screen.getByTestId('name-filter');
     userEvent.type(nameFilter, 'tato');
   });
 
-  it('testando filtro de colunas', () => {
-    render(<App />);
+  it('testando filtro de colunas', async() => {
+    await act(() => render(<App />));
 
     const columnSelects = screen.getByTestId('column-filter');
     userEvent.selectOptions(columnSelects, 'diameter');
@@ -37,8 +45,8 @@ import userEvent from '@testing-library/user-event';
     userEvent.click(button);
   });
 
-  it('testando filtro de valores e retirando filtro', () => {
-    render(<App />);
+  it('testando filtro de valores e retirando filtro', async() => {
+    await act(() => render(<App />));
 
     const columnSelects = screen.getByTestId('column-filter');
     userEvent.selectOptions(columnSelects, 'diameter');
@@ -66,8 +74,8 @@ import userEvent from '@testing-library/user-event';
     userEvent.click(removeAllButton);
   });
 
-  it('testando filtros e botoes (maior que)', () => {
-    render(<App />);
+  it('testando filtros e botoes (maior que)', async() => {
+    await act(() => render(<App />));
 
     const columnSelects = screen.getByTestId('column-filter');
     userEvent.selectOptions(columnSelects, 'diameter');
@@ -122,8 +130,8 @@ import userEvent from '@testing-library/user-event';
     userEvent.click(removeAllButton);
   });
 
-  it('testando filtros e botoes (menor que)', () => {
-    render(<App />);
+  it('testando filtros e botoes (menor que)', async() => {
+    await act(() => render(<App />));
 
     const columnSelects = screen.getByTestId('column-filter');
     userEvent.selectOptions(columnSelects, 'diameter');
@@ -178,8 +186,9 @@ import userEvent from '@testing-library/user-event';
     userEvent.click(removeAllButton);
   });
 
-  it('testando filtros e botoes (igual a)', () => {
+  it('testando filtros e botoes (igual a)', async() => {
     render(<App />);
+    await act(() => render(<App />));
 
     const columnSelects = screen.getByTestId('column-filter');
     userEvent.selectOptions(columnSelects, 'diameter');
@@ -233,3 +242,4 @@ import userEvent from '@testing-library/user-event';
     const removeAllButton = screen.getByTestId('button-remove-filters');
     userEvent.click(removeAllButton);
   });
+});
