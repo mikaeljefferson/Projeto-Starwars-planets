@@ -1,205 +1,235 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import testData from '../../cypress/mocks/testData';
+import { render, screen, waitFor } from '@testing-library/react';
 import App from '../App';
-import { act } from 'react-dom/test-utils';
 import userEvent from '@testing-library/user-event';
 
-test('I am your test', () => {
-  render(<App />);
-  const linkElement = screen.getByText(/Hello, App!/i);
-  expect(linkElement).toBeInTheDocument();
-});
 
+  it('Testando inputs', () => {
+    render(<App />);
 
-test('Os filtros são renderizado corretamente', async () => {
-  await act(() => render(<App />))
+    const nameFilter = screen.getByTestId('name-filter');
+    const columnSelects = screen.getByTestId('column-filter');
+    const comparisonSelects = screen.getByTestId('comparison-filter');
+    const valueSelects = screen.getByTestId('value-filter');
 
-  const nameFilter = await screen.findByTestId("name-filter");
-  const columnFilter = await screen.findByTestId("column-filter");
-  const comparisonFilter = await screen.findByTestId("comparison-filter");
-  const valueFilter = await screen.findByTestId("value-filter");
-  const btnFilter = await screen.findByTestId("button-filter");
-  const btnRemoveFilters = await screen.findByTestId("button-remove-filters");
-  const columnSort = await screen.findByTestId("column-sort");
-  const inputAsc = await screen.findByTestId("column-sort-input-asc");
-  const inputDesc = await screen.findByTestId("column-sort-input-desc");
-  const btnSort = await screen.findByTestId("column-sort-button");
-
-  expect(nameFilter).toBeInTheDocument();
-  expect(nameFilter).toHaveValue('');
-  expect(columnFilter).toBeInTheDocument();
-  expect(columnFilter).toHaveValue('population');
-  expect(comparisonFilter).toBeInTheDocument();
-  expect(comparisonFilter).toHaveValue('maior que');
-  expect(valueFilter).toBeInTheDocument();
-  expect(valueFilter).toHaveValue(0);
-  expect(btnFilter).toBeInTheDocument();
-  expect(btnRemoveFilters).toBeInTheDocument();
-  expect(columnSort).toBeInTheDocument();
-  expect(columnSort).toHaveValue('population');
-  expect(inputAsc).toBeInTheDocument();
-  expect(inputDesc).toBeInTheDocument();
-  expect(btnSort).toBeInTheDocument();
-});
-
-test('verifica se os planetas são renderizados na tela', async () => {
-  const planetsName = ['Tatooine', 'Alderaan', 'Yavin IV', 'Hoth', 'Dagobah', 'Bespin', 'Endor', 'Naboo', 'Coruscant', 'Kamino'];
-
-  await act(() => render(<App />));
-
-  const planets = await screen.findAllByTestId('planet-name');
-  expect(planets).toHaveLength(10);
-  planets.forEach((planet, index) => expect(planet).toHaveTextContent(planetsName[index]));
-});
-
-test('verifica o filtro por nome', async () => {
-  await act(() => render(<App />));
-
-  const nameFilter = await screen.findByTestId("name-filter");
-  act(() => {
-    userEvent.type(nameFilter, 'Tatooine');
-  })
-
-  const planets = await screen.findAllByTestId('planet-name');
-  expect(nameFilter).toHaveValue('Tatooine');
-  expect(planets).toHaveLength(1);
-});
-
-test('verifica o filtro numérico', async () => {
-  await act(() => render(<App />));
-
-  const columnFilter = await screen.findByTestId("column-filter");
-  const comparisonFilter = await screen.findByTestId("comparison-filter");
-  const valueFilter = await screen.findByTestId("value-filter");
-  const btnFilter = await screen.findByTestId("button-filter");
-
-  expect(columnFilter).toHaveLength(5);
-
-  act(() => {
-    userEvent.selectOptions(columnFilter, 'surface_water');
-    expect(columnFilter).toHaveValue('surface_water');
-    userEvent.selectOptions(comparisonFilter, 'menor que');
-    userEvent.type(valueFilter, '41');
-    userEvent.click(btnFilter);
+    expect(nameFilter).toBeInTheDocument();
+    expect(columnSelects).toBeInTheDocument();
+    expect(columnSelects.length).toBe(5);
+    expect(comparisonSelects).toBeInTheDocument();
+    expect(comparisonSelects.length).toBe(3);
+    expect(valueSelects).toBeInTheDocument();
   });
 
-  expect(columnFilter).toHaveValue('population');
-  expect(columnFilter).toHaveLength(4);
-  expect(comparisonFilter).toHaveValue('menor que');
-  expect(valueFilter).toHaveValue(null);
+  it('testando filtro de busca por nome', () => {
+    render(<App />);
 
-  const planets = await screen.findAllByTestId('planet-name');
-  expect(planets).toHaveLength(7);
-});
-
-test('verifica se é possível adicionar mais de um filtro numérico e remover todos', async () => {
-  await act(() => render(<App />));
-
-  const columnFilter = await screen.findByTestId("column-filter");
-  const comparisonFilter = await screen.findByTestId("comparison-filter");
-  const valueFilter = await screen.findByTestId("value-filter");
-  const btnFilter = await screen.findByTestId("button-filter");
-
-  act(() => {
-    userEvent.selectOptions(columnFilter, 'surface_water');
-    userEvent.selectOptions(comparisonFilter, 'maior que');
-    userEvent.type(valueFilter, '0');
-    userEvent.click(btnFilter);
+    const nameFilter = screen.getByTestId('name-filter');
+    userEvent.type(nameFilter, 'tato');
   });
 
-  const planets = await screen.findAllByTestId('planet-name');
-  expect(planets).toHaveLength(8);
+  it('testando filtro de colunas', () => {
+    render(<App />);
 
-  act(() => {
-    userEvent.selectOptions(columnFilter, 'rotation_period');
-    userEvent.selectOptions(comparisonFilter, 'menor que');
-    userEvent.type(valueFilter, '27');
-    userEvent.click(btnFilter);
+    const columnSelects = screen.getByTestId('column-filter');
+    userEvent.selectOptions(columnSelects, 'diameter');
+    const button = screen.getByTestId('button-filter');
+    userEvent.click(button);
   });
 
-  const planetsTwo = await screen.findAllByTestId('planet-name');
-  expect(planetsTwo).toHaveLength(7);
+  it('testando filtro de valores e retirando filtro', () => {
+    render(<App />);
 
-  act(() => {
-    userEvent.selectOptions(columnFilter, 'orbital_period');
-    userEvent.selectOptions(comparisonFilter, 'menor que');
-    userEvent.type(valueFilter, '4000');
-    userEvent.click(btnFilter);
+    const columnSelects = screen.getByTestId('column-filter');
+    userEvent.selectOptions(columnSelects, 'diameter');
+    const comparisonSelects = screen.getByTestId('comparison-filter');
+    userEvent.selectOptions(comparisonSelects, 'maior que');
+    const valueSelects = screen.getByTestId('value-filter');
+    userEvent.type(valueSelects, '10000');
+    const button = screen.getByTestId('button-filter');
+    userEvent.click(button);
+
+    const columnSelects2 = screen.getByTestId('column-filter');
+    userEvent.selectOptions(columnSelects2, 'population');
+    const comparisonSelects2 = screen.getByTestId('comparison-filter');
+    userEvent.selectOptions(comparisonSelects2, 'menor que');
+    const valueSelects2 = screen.getByTestId('value-filter');
+    userEvent.type(valueSelects2, '2000000');
+    const button2 = screen.getByTestId('button-filter');
+    userEvent.click(button2);
+    
+    const removeButton = screen.getAllByTestId('filter');
+    userEvent.click(removeButton[1]);
+    expect(removeButton.length).toBe(2)
+
+    const removeAllButton = screen.getByTestId('button-remove-filters');
+    userEvent.click(removeAllButton);
   });
 
-  const planetsThree = await screen.findAllByTestId('planet-name');
-  expect(planetsThree).toHaveLength(6);
+  it('testando filtros e botoes (maior que)', () => {
+    render(<App />);
 
-  act(() => {
-    userEvent.selectOptions(columnFilter, 'diameter');
-    userEvent.selectOptions(comparisonFilter, 'maior que');
-    userEvent.type(valueFilter, '8000');
-    userEvent.click(btnFilter);
+    const columnSelects = screen.getByTestId('column-filter');
+    userEvent.selectOptions(columnSelects, 'diameter');
+    const comparisonSelects = screen.getByTestId('comparison-filter');
+    userEvent.selectOptions(comparisonSelects, 'maior que');
+    const valueSelects = screen.getByTestId('value-filter');
+    userEvent.type(valueSelects, '10000');
+    const button = screen.getByTestId('button-filter');
+    userEvent.click(button);
+
+    const columnSelects2 = screen.getByTestId('column-filter');
+    userEvent.selectOptions(columnSelects2, 'population');
+    const comparisonSelects2 = screen.getByTestId('comparison-filter');
+    userEvent.selectOptions(comparisonSelects2, 'menor que');
+    const valueSelects2 = screen.getByTestId('value-filter');
+    userEvent.type(valueSelects2, '2000000');
+    const button2 = screen.getByTestId('button-filter');
+    userEvent.click(button2);
+
+    const columnSelects3 = screen.getByTestId('column-filter');
+    userEvent.selectOptions(columnSelects3, 'orbital_period');
+    const comparisonSelects3 = screen.getByTestId('comparison-filter');
+    userEvent.selectOptions(comparisonSelects3, 'maior que');
+    const valueSelects3 = screen.getByTestId('value-filter');
+    userEvent.type(valueSelects3, '549');
+    const button3 = screen.getByTestId('button-filter');
+    userEvent.click(button3);
+
+    const columnSelects4 = screen.getByTestId('column-filter');
+    userEvent.selectOptions(columnSelects4, 'surface_water');
+    const comparisonSelects4 = screen.getByTestId('comparison-filter');
+    userEvent.selectOptions(comparisonSelects4, 'menor que');
+    const valueSelects4 = screen.getByTestId('value-filter');
+    userEvent.type(valueSelects4, '10');
+    const button4 = screen.getByTestId('button-filter');
+    userEvent.click(button4);
+
+    const columnSelects5 = screen.getByTestId('column-filter');
+    userEvent.selectOptions(columnSelects5, 'rotation_period');
+    const comparisonSelects5 = screen.getByTestId('comparison-filter');
+    userEvent.selectOptions(comparisonSelects5, 'maior que');
+    const valueSelects5 = screen.getByTestId('value-filter');
+    userEvent.type(valueSelects5, '23');
+    const button5 = screen.getByTestId('button-filter');
+    userEvent.click(button5);
+    
+    const removeButton = screen.getAllByTestId('filter');
+    userEvent.click(removeButton[1]);
+    expect(removeButton.length).toBe(5)
+
+    const removeAllButton = screen.getByTestId('button-remove-filters');
+    userEvent.click(removeAllButton);
   });
 
-  const planetsFour = await screen.findAllByTestId('planet-name');
-  expect(planetsFour).toHaveLength(4);
+  it('testando filtros e botoes (menor que)', () => {
+    render(<App />);
 
-  act(() => {
-    userEvent.selectOptions(columnFilter, 'population');
-    userEvent.selectOptions(comparisonFilter, 'igual a');
-    userEvent.type(valueFilter, '200000');
-    userEvent.click(btnFilter);
+    const columnSelects = screen.getByTestId('column-filter');
+    userEvent.selectOptions(columnSelects, 'diameter');
+    const comparisonSelects = screen.getByTestId('comparison-filter');
+    userEvent.selectOptions(comparisonSelects, 'menor que');
+    const valueSelects = screen.getByTestId('value-filter');
+    userEvent.type(valueSelects, '10000');
+    const button = screen.getByTestId('button-filter');
+    userEvent.click(button);
+
+    const columnSelects2 = screen.getByTestId('column-filter');
+    userEvent.selectOptions(columnSelects2, 'population');
+    const comparisonSelects2 = screen.getByTestId('comparison-filter');
+    userEvent.selectOptions(comparisonSelects2, 'maior que');
+    const valueSelects2 = screen.getByTestId('value-filter');
+    userEvent.type(valueSelects2, '2000000');
+    const button2 = screen.getByTestId('button-filter');
+    userEvent.click(button2);
+
+    const columnSelects3 = screen.getByTestId('column-filter');
+    userEvent.selectOptions(columnSelects3, 'orbital_period');
+    const comparisonSelects3 = screen.getByTestId('comparison-filter');
+    userEvent.selectOptions(comparisonSelects3, 'menor que');
+    const valueSelects3 = screen.getByTestId('value-filter');
+    userEvent.type(valueSelects3, '549');
+    const button3 = screen.getByTestId('button-filter');
+    userEvent.click(button3);
+
+    const columnSelects4 = screen.getByTestId('column-filter');
+    userEvent.selectOptions(columnSelects4, 'surface_water');
+    const comparisonSelects4 = screen.getByTestId('comparison-filter');
+    userEvent.selectOptions(comparisonSelects4, 'maior que');
+    const valueSelects4 = screen.getByTestId('value-filter');
+    userEvent.type(valueSelects4, '10');
+    const button4 = screen.getByTestId('button-filter');
+    userEvent.click(button4);
+
+    const columnSelects5 = screen.getByTestId('column-filter');
+    userEvent.selectOptions(columnSelects5, 'rotation_period');
+    const comparisonSelects5 = screen.getByTestId('comparison-filter');
+    userEvent.selectOptions(comparisonSelects5, 'menor que');
+    const valueSelects5 = screen.getByTestId('value-filter');
+    userEvent.type(valueSelects5, '23');
+    const button5 = screen.getByTestId('button-filter');
+    userEvent.click(button5);
+    
+    const removeButton = screen.getAllByText(/x/i);
+    expect(removeButton.length).toBe(5)
+    userEvent.click(removeButton[1]);
+
+    const removeAllButton = screen.getByTestId('button-remove-filters');
+    userEvent.click(removeAllButton);
   });
 
-  const planetsFive = await screen.findAllByTestId('planet-name');
-  expect(planetsFive).toHaveLength(1);
-  expect(planetsFive[0]).toHaveTextContent('Tatooine');
-  expect(columnFilter).toBeDisabled();
-  expect(columnFilter).toHaveLength(0);
+  it('testando filtros e botoes (igual a)', () => {
+    render(<App />);
 
-  const btnRemoveAll = await screen.findByTestId('button-remove-filters');
-  act(() => {
-    userEvent.click(btnRemoveAll);
+    const columnSelects = screen.getByTestId('column-filter');
+    userEvent.selectOptions(columnSelects, 'diameter');
+    const comparisonSelects = screen.getByTestId('comparison-filter');
+    userEvent.selectOptions(comparisonSelects, 'igual a');
+    const valueSelects = screen.getByTestId('value-filter');
+    userEvent.type(valueSelects, '10000');
+    const button = screen.getByTestId('button-filter');
+    userEvent.click(button);
+
+    const columnSelects2 = screen.getByTestId('column-filter');
+    userEvent.selectOptions(columnSelects2, 'population');
+    const comparisonSelects2 = screen.getByTestId('comparison-filter');
+    userEvent.selectOptions(comparisonSelects2, 'igual a');
+    const valueSelects2 = screen.getByTestId('value-filter');
+    userEvent.type(valueSelects2, '2000000');
+    const button2 = screen.getByTestId('button-filter');
+    userEvent.click(button2);
+
+    const columnSelects3 = screen.getByTestId('column-filter');
+    userEvent.selectOptions(columnSelects3, 'orbital_period');
+    const comparisonSelects3 = screen.getByTestId('comparison-filter');
+    userEvent.selectOptions(comparisonSelects3, 'igual a');
+    const valueSelects3 = screen.getByTestId('value-filter');
+    userEvent.type(valueSelects3, '549');
+    const button3 = screen.getByTestId('button-filter');
+    userEvent.click(button3);
+
+    const columnSelects4 = screen.getByTestId('column-filter');
+    userEvent.selectOptions(columnSelects4, 'surface_water');
+    const comparisonSelects4 = screen.getByTestId('comparison-filter');
+    userEvent.selectOptions(comparisonSelects4, 'igual a');
+    const valueSelects4 = screen.getByTestId('value-filter');
+    userEvent.type(valueSelects4, '10');
+    const button4 = screen.getByTestId('button-filter');
+    userEvent.click(button4);
+
+    const columnSelects5 = screen.getByTestId('column-filter');
+    userEvent.selectOptions(columnSelects5, 'rotation_period');
+    const comparisonSelects5 = screen.getByTestId('comparison-filter');
+    userEvent.selectOptions(comparisonSelects5, 'igual a');
+    const valueSelects5 = screen.getByTestId('value-filter');
+    userEvent.type(valueSelects5, '23');
+    const button5 = screen.getByTestId('button-filter');
+    userEvent.click(button5);
+    
+    const removeButton = screen.getAllByTestId('filter');
+    expect(removeButton.length).toBe(5)
+    userEvent.click(removeButton[4]);
+
+    const removeAllButton = screen.getByTestId('button-remove-filters');
+    userEvent.click(removeAllButton);
   });
-  expect(columnFilter).toHaveLength(5);
-});
-
-test('Verifica o botão de remover filtros numéricos', async () => {
-  await act(() => render(<App />));
-
-  const columnFilter = await screen.findByTestId("column-filter");
-  const comparisonFilter = await screen.findByTestId("comparison-filter");
-  const valueFilter = await screen.findByTestId("value-filter");
-  const btnFilter = await screen.findByTestId("button-filter");
-
-  act(() => {
-    userEvent.selectOptions(columnFilter, 'surface_water');
-    userEvent.selectOptions(comparisonFilter, 'maior que');
-    userEvent.type(valueFilter, '0');
-    userEvent.click(btnFilter);
-    userEvent.selectOptions(columnFilter, 'population');
-    userEvent.selectOptions(comparisonFilter, 'menor que');
-    userEvent.type(valueFilter, '6000000');
-    userEvent.click(btnFilter);
-    userEvent.selectOptions(columnFilter, 'diameter');
-    userEvent.selectOptions(comparisonFilter, 'maior que');
-    userEvent.type(valueFilter, '8000');
-    userEvent.click(btnFilter);
-  });
-
-  expect(columnFilter).toHaveLength(2);
-  expect(columnFilter).toHaveValue('orbital_period');
-
-  const btnRemove = await screen.findAllByTestId('button-remove');
-  expect(btnRemove).toHaveLength(3);
-  act(() => {
-    userEvent.click(btnRemove[1]);
-  })
-  const btnRemoveTwo = await screen.findAllByTestId('button-remove');
-  expect(btnRemoveTwo).toHaveLength(2);
-  expect(columnFilter).toHaveLength(3);
-
-  const btnRemoveAll = await screen.findByTestId('button-remove-filters');
-  act(() => {
-    userEvent.click(btnRemoveAll);
-  });
-  expect(columnFilter).toHaveLength(5);
-})
-
-
